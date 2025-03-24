@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "download_sentiment.py",
             "console": "integratedTerminal"
-        }        
+        },        
         {
             "name": "Python Debugger: trader.py",
             "type": "debugpy",
