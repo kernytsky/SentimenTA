@@ -16,7 +16,7 @@ class StocktwitsScanner:
         Returns DataFrame with columns: ticker, watchlist_count, sentiment, source, timestamp
         """
         try:
-            print("Fetching Stocktwits trending data...")
+            print("Fetching Stocktwits trending data")
             url = 'https://api.stocktwits.com/api/2/trending/symbols.json'
             response = requests.get(url, headers=self.headers)
             

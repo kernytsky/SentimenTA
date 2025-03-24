@@ -16,7 +16,7 @@ class WSBScanner:
         Returns DataFrame with columns: ticker, mentions, sentiment, source, timestamp
         """
         try:
-            print("Fetching SwaggyStocks data...")
+            print("Fetching SwaggyStocks data")
             url = 'https://api.swaggystocks.com/stocks/sentiment'
             response = requests.get(url, headers=self.headers)
             
@@ -61,7 +61,7 @@ class WSBScanner:
         Returns DataFrame with columns: ticker, mentions, sentiment, source, timestamp
         """
         try:
-            print("Fetching ApeWisdom data...")
+            print("Fetching ApeWisdom data")
             url = 'https://apewisdom.io/api/v1.0/filter/all-stocks/page/1'
             response = requests.get(url, headers=self.headers)
             
@@ -106,11 +106,12 @@ class WSBScanner:
         Returns DataFrame with columns: ticker, mentions, sentiment, source, timestamp
         """
         # Get data from both sources
-        swaggy_df = self.get_swaggy_stocks(limit)
+        # swaggy_df = self.get_swaggy_stocks(limit)
         ape_df = self.get_ape_wisdom(limit)
         
         # Combine dataframes
-        combined_df = pd.concat([swaggy_df, ape_df], ignore_index=True)
+        #combined_df = pd.concat([swaggy_df, ape_df], ignore_index=True)
+        combined_df = ape_df
         
         if combined_df.empty:
             return combined_df

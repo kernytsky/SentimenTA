@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 from datetime import datetime
 from dotenv import load_dotenv
@@ -6,14 +8,21 @@ from social_scanner import SocialScanner
 from technical_analysis import TechnicalAnalyzer
 from position_manager import PositionManager
 import pandas as pd
+import argparse
+
+dry_run = True
 
 class Trader:
     def __init__(self):
         self.position_manager = PositionManager()
     
     def manage_existing_positions(self, analyzer):
+        print(f'Dry run: {dry_run}')
+        exit
         """First step: Analyze and manage existing positions"""
-        print("\nStep 1: Managing Existing Positions...")
+        print("\n" + "="*50)
+        print("Step 1: Managing Existing Positions")
+        print("="*50)
         
         # Get current positions
         current_positions = self.position_manager.update_positions()
@@ -23,7 +32,7 @@ class Trader:
             
         # Analyze each position
         for symbol in list(current_positions.keys()):
-            print(f"\nAnalyzing {symbol}...")
+            print(f"\nAnalyzing {symbol}")
             position = current_positions[symbol]
             side = OrderSide.BUY if float(position.qty) > 0 else OrderSide.SELL
             technical_data = analyzer.analyze_stock(symbol, side)
@@ -31,7 +40,10 @@ class Trader:
             if technical_data:
                 # Check if position should be closed based on technical signals
                 if self.position_manager.should_close_position(symbol, technical_data):
-                    self.position_manager.close_position(symbol)
+                    if dry_run:
+                        print("DRY RUN so not closing position")
+                    else:
+                        self.position_manager.close_position(symbol)
                 else:
                     print(f"Maintaining position in {symbol}:")
                     print(f"Technical score: {technical_data['score']:.2f}")
@@ -44,18 +56,21 @@ class Trader:
     
     def find_new_opportunities(self, analyzer):
         """Second step: Find and execute new trading opportunities"""
-        print("\nStep 2: Finding New Opportunities...")
+        print("\n" + "="*50)
+        print("Step 2: Finding New Opportunities")
+        print("="*50)
+
         
         # Get social sentiment data
         scanner = SocialScanner()
-        print("\nFinding trending social stocks...")
+        print("\nFinding trending social stocks")
         df = scanner.get_trending_stocks()
         
         if df.empty:
             print("No trending stocks found today.")
             return
         
-        print("\nAnalyzing technical indicators...")
+        print("\nAnalyzing technical indicators")
         analyzed_stocks = []
         
         for _, stock in df.iterrows():
@@ -64,7 +79,7 @@ class Trader:
             if '.X' in ticker:
                 continue
                 
-            print(f"\nAnalyzing {ticker}...")
+            # print(f"\nAnalyzing {ticker}")
             # Initial neutral analysis for screening
             technical_data = analyzer.analyze_stock(ticker, None)
             if technical_data:
@@ -121,7 +136,7 @@ class Trader:
         print(f"Remaining exposure available: {remaining_exposure:.1%}")
         
         # Second pass: Process new opportunities
-        print("\nProcessing trading opportunities...")
+        print("\nProcessing trading opportunities")
         
         # Use very strict thresholds when near capacity
         if current_exposure > self.position_manager.max_total_exposure * 0.7:  # Above 70% capacity
@@ -150,6 +165,8 @@ class Trader:
         short_candidates = [s for s in short_candidates if s['ticker'] not in long_symbols]
         
         print("\nLong Opportunities (Top 10):")
+        print("="*30)
+    
         for stock in long_candidates:
             print(f"\n{stock['ticker']}:")
             print(f"Current Price: ${stock['price']:.2f}")
@@ -181,19 +198,23 @@ class Trader:
                     
                     if allow_trade and shares > 0:
                         print(f"\nPlacing LONG order for {shares} shares of {stock['ticker']}")
-                        order = self.position_manager.place_order(
-                            stock['ticker'], 
-                            shares, 
-                            side=OrderSide.BUY
-                        )
-                        if order:
-                            print(f"Long order placed successfully: {order.id}")
+                        if dry_run:
+                            print("DRY RUN so not placing order")
+                        else:
+                            order = self.position_manager.place_order(
+                                stock['ticker'], 
+                                shares, 
+                                side=OrderSide.BUY
+                            )
+                            if order:
+                                print(f"Long order placed successfully: {order.id}")
                     else:
                         print("\nSkipping long trade - position limits reached")
                 else:
                     print("\nSkipping long trade - negative momentum")
         
         print("\nShort Opportunities (Bottom 10):")
+        print("="*30)
         for stock in short_candidates:
             print(f"\n{stock['ticker']}:")
             print(f"Current Price: ${stock['price']:.2f}")
@@ -225,13 +246,16 @@ class Trader:
                     
                     if allow_trade and shares > 0:
                         print(f"\nPlacing SHORT order for {shares} shares of {stock['ticker']}")
-                        order = self.position_manager.place_order(
-                            stock['ticker'],
-                            shares,
-                            side=OrderSide.SELL
-                        )
-                        if order:
-                            print(f"Short order placed successfully: {order.id}")
+                        if dry_run:
+                            print("DRY RUN so not placing order")
+                        else:
+                            order = self.position_manager.place_order(
+                                stock['ticker'],
+                                shares,
+                                side=OrderSide.SELL
+                            )
+                            if order:
+                                print(f"Short order placed successfully: {order.id}")
                     else:
                         print("\nSkipping short trade - position limits reached")
                 else:
@@ -261,4 +285,14 @@ def main():
     trader.analyze_and_trade()
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description="Trading bot")
+    parser.add_argument("-d", "--dry-run", default=False, action="store_true", help="Run the bot in dry run mode")
+    parser.add_argument("-e", "--env-file", type=str, default=".env", help="Path to the environment file")
+    args = parser.parse_args()
+
+    dry_run = args.dry_run
+    load_dotenv(args.env_file)
+
+    #print(dry_run)
     main()

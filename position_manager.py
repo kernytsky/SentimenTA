@@ -33,17 +33,25 @@ class Position:
 
 class PositionManager:
     def __init__(self):
-        load_dotenv()
+        #load_dotenv(".env_paper")
+        #print(os.getenv('ALPACA_API_KEY'))
+        #print(os.getenv('WORD'))
+        #load_dotenv(".env_paper", override=True)
         api_key = os.getenv('ALPACA_API_KEY')
         api_secret = os.getenv('ALPACA_SECRET_KEY')
-        self.trading_client = TradingClient(api_key, api_secret, paper=True)
+        paper = os.getenv('PAPER')
+        print(f'API_KEY: {api_key}')
+        print(f'Paper:   {paper}')
+        #print(os.getenv('WORD'))
+        #exit()
+        self.trading_client = TradingClient(api_key, api_secret, paper=paper)
         self.positions = {}  # symbol -> Position object
         self.pending_closes = set()  # Symbols with pending close orders
         self.pending_orders = []  # List of pending new position orders
         
         # Position sizing parameters
-        self.max_position_size = 0.08  # 8% max per position
-        self.position_step_size = 0.02  # 2% per trade for gradual building
+        self.max_position_size = 0.10  # 8% max per position
+        self.position_step_size = 0.10  # 2% per trade for gradual building
         self.max_total_exposure = 1.6  # 160% total exposure (80% long + 80% short)
         
         # Initialize current positions and clean up any old pending orders

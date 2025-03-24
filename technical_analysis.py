@@ -66,27 +66,27 @@ class TechnicalAnalyzer:
             symbol: Stock symbol
             side: OrderSide.BUY for long analysis, OrderSide.SELL for short analysis, None for both
         """
-        print(f"Getting historical data for {symbol}...")
+        # print(f"Getting historical data for {symbol}", end="")
         df = self.get_historical_data(symbol)
         if df is None:
             print(f"No historical data available for {symbol}")
             return None
-        print(f"Got {len(df)} days of data")
+        #print(f"Got {len(df)} days of data")
             
-        print("Calculating technical indicators...")
+        #print("Calculating technical indicators")
         df = self.calculate_indicators(df)
-        print("Indicators calculated successfully")
+        #print("Indicators calculated successfully")
         
         # Get latest values and previous values for momentum
         latest = df.iloc[-1]
         prev = df.iloc[-2]
         week_ago = df.iloc[-5] if len(df) >= 5 else df.iloc[0]
         
-        print("\nLatest values:")
-        print(f"Price: ${latest['close']:.2f}")
-        print(f"RSI: {latest['RSI']:.2f}")
-        print(f"MACD: {latest['MACD']:.3f} vs Signal: {latest['MACD_Signal']:.3f}")
-        print(f"20 SMA: {latest['SMA_20']:.2f} vs 50 SMA: {latest['SMA_50']:.2f}")
+        # print("\nLatest values:")
+        # print(f"Price: ${latest['close']:.2f}")
+        # print(f"RSI: {latest['RSI']:.2f}")
+        # print(f"MACD: {latest['MACD']:.3f} vs Signal: {latest['MACD_Signal']:.3f}")
+        # print(f"20 SMA: {latest['SMA_20']:.2f} vs 50 SMA: {latest['SMA_50']:.2f}")
         
         signals = {
             'symbol': symbol,
@@ -184,7 +184,7 @@ def analyze_hype_stocks(hype_stocks):
     
     for stock in hype_stocks:
         ticker = stock['ticker']
-        print(f"Analyzing technical indicators for {ticker}...")
+        print(f"Analyzing technical indicators for {ticker}")
         
         technical_data = analyzer.analyze_stock(ticker)
         if technical_data:
